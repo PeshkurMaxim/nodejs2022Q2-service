@@ -1,16 +1,24 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './interfaces/user.interface';
-import { UpdatePasswordDto } from './dto/updatePassword-user.dto';
+import { UpdatePasswordDto } from './dto/update-user-password.dto';
 import { ParseUUIDPipe } from '../common/pipes/parce-uuid.pipe';
 
-@Controller('users')
+@Controller('user')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async findAll(): Promise<User[]> {
+  async findAll() {
     return this.usersService.findAll();
   }
 
@@ -20,8 +28,8 @@ export class UsersController {
   }
 
   @Post()
-  async create(@Body() createCatDto: CreateUserDto) {
-    this.usersService.create(createCatDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
   }
 
   @Put(':id')
@@ -29,6 +37,12 @@ export class UsersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    this.usersService.updatePassword(id, updatePasswordDto);
+    return this.usersService.updatePassword(id, updatePasswordDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    this.usersService.delete(id);
   }
 }
