@@ -62,4 +62,17 @@ export class TracksService {
       }
     });
   }
+
+  removeAlbum(albumId: string) {
+    this.tracks = this.tracks.map((track) => {
+      if (track.albumId === albumId) {
+        return {
+          ...track,
+          albumId: null,
+        };
+      } else {
+        return track;
+      }
+    });
+  }
 }
