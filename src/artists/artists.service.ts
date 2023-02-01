@@ -3,9 +3,12 @@ import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { TracksService } from 'src/tracks/tracks.service';
 
 @Injectable()
 export class ArtistsService {
+  constructor(private readonly tracksService: TracksService) {}
+
   private readonly artists: Artist[] = [];
 
   create(createArtistDto: CreateArtistDto): Artist {
@@ -44,6 +47,7 @@ export class ArtistsService {
 
   remove(id: string) {
     const artist = this.findOne(id);
+    this.tracksService.removeArtist(id);
 
     this.artists.splice(this.artists.indexOf(artist), 1);
   }
