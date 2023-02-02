@@ -3,13 +3,11 @@ import CreateAlbumDto from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { TracksService } from 'src/tracks/tracks.service';
+import { DB } from 'src/DB/db.service';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private readonly tracksService: TracksService) {}
-
-  private albums: Album[] = [];
+  constructor(private database: DB) {}
 
   create(createAlbumDto: CreateAlbumDto): Album {
     const newAlbum: Album = {
@@ -18,16 +16,16 @@ export class AlbumsService {
       ...createAlbumDto,
     };
 
-    this.albums.push(newAlbum);
+    this.database.albums.push(newAlbum);
     return newAlbum;
   }
 
   findAll(): Album[] {
-    return this.albums;
+    return this.database.albums;
   }
 
   findOne(id: string): Album {
-    const album = this.albums.find((album) => album.id == id);
+    const album = this.database.albums.find((album) => album.id == id);
     if (!album) throw new NotFoundException();
 
     return album;
@@ -41,15 +39,25 @@ export class AlbumsService {
       ...updateAlbumDto,
     };
 
-    this.albums[this.albums.indexOf(album)] = updatedAlbum;
+    this.database.albums[this.database.albums.indexOf(album)] = updatedAlbum;
 
     return updatedAlbum;
   }
 
   remove(id: string) {
     const album = this.findOne(id);
-    this.tracksService.removeAlbum(id);
 
-    this.albums.splice(this.albums.indexOf(album), 1);
+    this.database.tracks = this.database.tracks.map((track) => {
+      if (track.albumId === id) {
+        return {
+          ...track,
+          albumId: null,
+        };
+      } else {
+        return track;
+      }
+    });
+
+    this.database.albums.splice(this.database.albums.indexOf(album), 1);
   }
 }

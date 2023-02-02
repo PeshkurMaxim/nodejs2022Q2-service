@@ -9,10 +9,11 @@ import { User } from './interfaces/user.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdatePasswordDto } from './dto/update-user-password.dto';
 import { UserDto } from './dto/user.dto';
+import { DB } from '../DB/db.service';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [];
+  constructor(private database: DB) {}
 
   create(user: CreateUserDto): UserDto {
     const newUser: User = {
@@ -23,23 +24,23 @@ export class UsersService {
       updatedAt: Date.now(),
     };
 
-    this.users.push(newUser);
+    this.database.users.push(newUser);
     return this.userToReturnFormat(newUser);
   }
 
   findAll(): UserDto[] {
-    return this.users.map((user) => this.userToReturnFormat(user));
+    return this.database.users.map((user) => this.userToReturnFormat(user));
   }
 
   findOne(id: string): UserDto {
-    const user = this.users.find((user) => user.id == id);
+    const user = this.database.users.find((user) => user.id == id);
     if (!user) throw new NotFoundException();
 
     return this.userToReturnFormat(user);
   }
 
   updatePassword(id: string, passwords: UpdatePasswordDto): UserDto {
-    const user = this.users.find((user) => user.id == id);
+    const user = this.database.users.find((user) => user.id == id);
     if (!user) throw new NotFoundException();
 
     if (user.password !== passwords.oldPassword)
@@ -52,16 +53,16 @@ export class UsersService {
       updatedAt: Date.now(),
     };
 
-    this.users[this.users.indexOf(user)] = updatedUser;
+    this.database.users[this.database.users.indexOf(user)] = updatedUser;
 
     return this.userToReturnFormat(updatedUser);
   }
 
   delete(id: string) {
-    const user = this.users.find((user) => user.id == id);
+    const user = this.database.users.find((user) => user.id == id);
     if (!user) throw new NotFoundException();
 
-    this.users.splice(this.users.indexOf(user), 1);
+    this.database.users.splice(this.database.users.indexOf(user), 1);
   }
 
   userToReturnFormat(user: User): UserDto {

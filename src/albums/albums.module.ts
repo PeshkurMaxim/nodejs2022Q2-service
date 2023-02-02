@@ -4,7 +4,6 @@ import { AlbumsController } from './albums.controller';
 import { TracksModule } from 'src/tracks/tracks.module';
 
 @Module({
-  imports: [TracksModule],
   controllers: [AlbumsController],
   providers: [AlbumsService],
   exports: [AlbumsService],

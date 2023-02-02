@@ -3,13 +3,11 @@ import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { TracksService } from 'src/tracks/tracks.service';
+import { DB } from 'src/DB/db.service';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private readonly tracksService: TracksService) {}
-
-  private readonly artists: Artist[] = [];
+  constructor(private database: DB) {}
 
   create(createArtistDto: CreateArtistDto): Artist {
     const newArtist: Artist = {
@@ -17,16 +15,16 @@ export class ArtistsService {
       ...createArtistDto,
     };
 
-    this.artists.push(newArtist);
+    this.database.artists.push(newArtist);
     return newArtist;
   }
 
   findAll(): Artist[] {
-    return this.artists;
+    return this.database.artists;
   }
 
   findOne(id: string): Artist {
-    const artist = this.artists.find((artist) => artist.id == id);
+    const artist = this.database.artists.find((artist) => artist.id == id);
     if (!artist) throw new NotFoundException();
 
     return artist;
@@ -40,15 +38,26 @@ export class ArtistsService {
       ...updateArtistDto,
     };
 
-    this.artists[this.artists.indexOf(artist)] = updatedArtist;
+    this.database.artists[this.database.artists.indexOf(artist)] =
+      updatedArtist;
 
     return updatedArtist;
   }
 
   remove(id: string) {
     const artist = this.findOne(id);
-    this.tracksService.removeArtist(id);
 
-    this.artists.splice(this.artists.indexOf(artist), 1);
+    this.database.tracks = this.database.tracks.map((track) => {
+      if (track.artistId === id) {
+        return {
+          ...track,
+          artistId: null,
+        };
+      } else {
+        return track;
+      }
+    });
+
+    this.database.artists.splice(this.database.artists.indexOf(artist), 1);
   }
 }
