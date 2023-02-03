@@ -4,18 +4,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DB } from 'src/DB/db.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './interfaces/user.interface';
+import { UpdatePasswordDto } from './dto/update-password-user.dto';
+import { User } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { UpdatePasswordDto } from './dto/update-user-password.dto';
-import { UserDto } from './dto/user.dto';
-import { DB } from '../DB/db.service';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(private database: DB) {}
 
-  create(user: CreateUserDto): UserDto {
+  create(user: CreateUserDto): User {
     const newUser: User = {
       id: uuidv4(),
       ...user,
@@ -25,21 +24,21 @@ export class UsersService {
     };
 
     this.database.users.push(newUser);
-    return this.userToReturnFormat(newUser);
+    return newUser;
   }
 
-  findAll(): UserDto[] {
-    return this.database.users.map((user) => this.userToReturnFormat(user));
+  findAll(): User[] {
+    return this.database.users;
   }
 
-  findOne(id: string): UserDto {
+  findOne(id: string): User {
     const user = this.database.users.find((user) => user.id == id);
     if (!user) throw new NotFoundException();
 
-    return this.userToReturnFormat(user);
+    return user;
   }
 
-  updatePassword(id: string, passwords: UpdatePasswordDto): UserDto {
+  updatePassword(id: string, passwords: UpdatePasswordDto): User {
     const user = this.database.users.find((user) => user.id == id);
     if (!user) throw new NotFoundException();
 
@@ -55,7 +54,7 @@ export class UsersService {
 
     this.database.users[this.database.users.indexOf(user)] = updatedUser;
 
-    return this.userToReturnFormat(updatedUser);
+    return updatedUser;
   }
 
   delete(id: string) {
@@ -63,10 +62,5 @@ export class UsersService {
     if (!user) throw new NotFoundException();
 
     this.database.users.splice(this.database.users.indexOf(user), 1);
-  }
-
-  userToReturnFormat(user: User): UserDto {
-    const { password, ...returnUser } = user;
-    return returnUser;
   }
 }
