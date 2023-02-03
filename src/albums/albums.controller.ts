@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { ParseUUIDPipe } from 'src/common/pipes/parce-uuid.pipe';
 import { AlbumsService } from './albums.service';
@@ -29,7 +30,10 @@ export class AlbumsController {
 
   @Get(':id')
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.albumsService.findOne(id);
+    const album = this.albumsService.findOne(id);
+    if (!album) throw new NotFoundException();
+
+    return album;
   }
 
   @Put(':id')
@@ -37,12 +41,16 @@ export class AlbumsController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
-    return this.albumsService.update(id, updateAlbumDto);
+    const album = this.albumsService.update(id, updateAlbumDto);
+    if (!album) throw new NotFoundException();
+
+    return album;
   }
 
   @Delete(':id')
   @HttpCode(204)
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.albumsService.remove(id);
+    const album = this.albumsService.remove(id);
+    if (!album) throw new NotFoundException();
   }
 }

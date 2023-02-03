@@ -9,8 +9,11 @@ import {
   Put,
   UseInterceptors,
   ClassSerializerInterceptor,
+  NotFoundException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ParseUUIDPipe } from 'src/common/pipes/parce-uuid.pipe';
 import { User } from './entities/user.entity';
@@ -18,22 +21,25 @@ import { UpdatePasswordDto } from './dto/update-password-user.dto';
 
 @Controller('user')
 @UseInterceptors(ClassSerializerInterceptor)
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   async findAll() {
-    return this.userService.findAll().map((user) => new User(user));
+    return this.usersService.findAll().map((user) => new User(user));
   }
 
   @Get(':id')
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return new User(this.userService.findOne(id));
+    const user = this.usersService.findOne(id);
+    if (!user) throw new NotFoundException();
+
+    return new User(user);
   }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return new User(this.userService.create(createUserDto));
+    return new User(this.usersService.create(createUserDto));
   }
 
   @Put(':id')
@@ -41,12 +47,20 @@ export class UserController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return new User(this.userService.updatePassword(id, updatePasswordDto));
+    const user = this.usersService.findOne(id);
+    if (!user) throw new NotFoundException();
+
+    const result = this.usersService.updatePassword(user, updatePasswordDto);
+    if (!result)
+      throw new HttpException('Wrong old password', HttpStatus.FORBIDDEN);
+
+    return new User(result);
   }
 
   @Delete(':id')
   @HttpCode(204)
   async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    this.userService.delete(id);
+    const user = this.usersService.delete(id);
+    if (!user) throw new NotFoundException();
   }
 }

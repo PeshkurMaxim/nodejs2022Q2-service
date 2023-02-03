@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
@@ -25,15 +25,16 @@ export class TracksService {
     return this.database.tracks;
   }
 
-  findOne(id: string): Track {
+  findOne(id: string): Track | null {
     const track = this.database.tracks.find((track) => track.id == id);
-    if (!track) throw new NotFoundException();
+    if (!track) return null;
 
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto): Track {
+  update(id: string, updateTrackDto: UpdateTrackDto): Track | null {
     const track = this.findOne(id);
+    if (!track) return null;
 
     const updatedTrack = {
       ...track,
@@ -45,9 +46,11 @@ export class TracksService {
     return updatedTrack;
   }
 
-  remove(id: string) {
+  remove(id: string): Track | null {
     const track = this.findOne(id);
+    if (!track) return null;
 
     this.database.tracks.splice(this.database.tracks.indexOf(track), 1);
+    return track;
   }
 }

@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DB } from 'src/DB/db.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password-user.dto';
@@ -11,7 +6,7 @@ import { User } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(private database: DB) {}
 
   create(user: CreateUserDto): User {
@@ -31,19 +26,14 @@ export class UserService {
     return this.database.users;
   }
 
-  findOne(id: string): User {
+  findOne(id: string): User | null {
     const user = this.database.users.find((user) => user.id == id);
-    if (!user) throw new NotFoundException();
 
     return user;
   }
 
-  updatePassword(id: string, passwords: UpdatePasswordDto): User {
-    const user = this.database.users.find((user) => user.id == id);
-    if (!user) throw new NotFoundException();
-
-    if (user.password !== passwords.oldPassword)
-      throw new HttpException('Wrong old password', HttpStatus.FORBIDDEN);
+  updatePassword(user: User, passwords: UpdatePasswordDto): User | null {
+    if (user.password !== passwords.oldPassword) return null;
 
     const updatedUser = {
       ...user,
@@ -57,10 +47,11 @@ export class UserService {
     return updatedUser;
   }
 
-  delete(id: string) {
+  delete(id: string): User | null {
     const user = this.database.users.find((user) => user.id == id);
-    if (!user) throw new NotFoundException();
+    if (!user) return null;
 
     this.database.users.splice(this.database.users.indexOf(user), 1);
+    return user;
   }
 }

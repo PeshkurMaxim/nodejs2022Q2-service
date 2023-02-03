@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
@@ -23,15 +23,16 @@ export class ArtistsService {
     return this.database.artists;
   }
 
-  findOne(id: string): Artist {
+  findOne(id: string): Artist | null {
     const artist = this.database.artists.find((artist) => artist.id == id);
-    if (!artist) throw new NotFoundException();
+    if (!artist) return null;
 
     return artist;
   }
 
   update(id: string, updateArtistDto: UpdateArtistDto): Artist {
     const artist = this.findOne(id);
+    if (!artist) return null;
 
     const updatedArtist = {
       ...artist,
@@ -46,6 +47,7 @@ export class ArtistsService {
 
   remove(id: string) {
     const artist = this.findOne(id);
+    if (!artist) return null;
 
     this.database.tracks = this.database.tracks.map((track) => {
       if (track.artistId === id) {
@@ -59,5 +61,6 @@ export class ArtistsService {
     });
 
     this.database.artists.splice(this.database.artists.indexOf(artist), 1);
+    return artist;
   }
 }

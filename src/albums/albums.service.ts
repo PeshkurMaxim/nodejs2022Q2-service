@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import CreateAlbumDto from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
@@ -24,15 +24,16 @@ export class AlbumsService {
     return this.database.albums;
   }
 
-  findOne(id: string): Album {
+  findOne(id: string): Album | null {
     const album = this.database.albums.find((album) => album.id == id);
-    if (!album) throw new NotFoundException();
+    if (!album) return null;
 
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto): Album {
+  update(id: string, updateAlbumDto: UpdateAlbumDto): Album | null {
     const album = this.findOne(id);
+    if (!album) return null;
 
     const updatedAlbum = {
       ...album,
@@ -44,8 +45,9 @@ export class AlbumsService {
     return updatedAlbum;
   }
 
-  remove(id: string) {
+  remove(id: string): Album | null {
     const album = this.findOne(id);
+    if (!album) return null;
 
     this.database.tracks = this.database.tracks.map((track) => {
       if (track.albumId === id) {
@@ -59,5 +61,6 @@ export class AlbumsService {
     });
 
     this.database.albums.splice(this.database.albums.indexOf(album), 1);
+    return album;
   }
 }

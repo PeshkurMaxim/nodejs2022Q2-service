@@ -6,17 +6,17 @@ import { FavoriteDto } from './dto/favorite.dto';
 export class FavoritesService {
   constructor(private database: DB) {}
 
-  addTrack(id: string): number | void {
+  addTrack(id: string): number | null {
     if (!this.database.tracks.find((track) => track.id === id)) return;
     return this.database.favorites.tracks.push(id);
   }
 
-  addAlbum(id: string): number | void {
+  addAlbum(id: string): number | null {
     if (!this.database.albums.find((album) => album.id === id)) return;
     return this.database.favorites.albums.push(id);
   }
 
-  addArtist(id: string): number | void {
+  addArtist(id: string): number | null {
     if (!this.database.artists.find((artist) => artist.id === id)) return;
     return this.database.favorites.artists.push(id);
   }
@@ -54,21 +54,21 @@ export class FavoritesService {
     return artists;
   }
 
-  removeTrack(id: string): string[] | void {
+  removeTrack(id: string): string[] | null {
     const index = this.database.favorites.tracks.indexOf(id);
     if (index < 0) return;
 
     return this.database.favorites.tracks.splice(index, 1);
   }
 
-  removeAlbum(id: string): string[] | void {
+  removeAlbum(id: string): string[] | null {
     const index = this.database.favorites.albums.indexOf(id);
     if (index < 0) return;
 
     return this.database.favorites.albums.splice(index, 1);
   }
 
-  removeArtist(id: string): string[] | void {
+  removeArtist(id: string): string[] | null {
     const index = this.database.favorites.artists.indexOf(id);
     if (index < 0) return;
 
