@@ -1,0 +1,36 @@
+version: '3.0'
+
+services:
+  node:
+    build: .
+    image: m.peshkur/service
+    networks:
+      - service  
+    ports:
+      - ${PORT}:${PORT}
+    restart: on-failure
+    depends_on:
+      - database
+    environment:
+      - PORT=${PORT}
+    volumes:
+      - ./src:/usr/app/src
+    command: ["npm", "run", "start:dev"]
+
+  database:
+    build: ./database/
+    image: m.peshkur/service-database
+    networks:
+      - service 
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT} 
+    restart: on-failure 
+    volumes:
+      - ./database/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+networks:
+  service:
+    driver: bridge
