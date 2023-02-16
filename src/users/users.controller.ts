@@ -26,20 +26,20 @@ export class UsersController {
 
   @Get()
   async findAll() {
-    return this.usersService.findAll().map((user) => new User(user));
+    return await this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    const user = this.usersService.findOne(id);
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const user = await this.usersService.findOne(id);
     if (!user) throw new NotFoundException();
 
-    return new User(user);
+    return user;
   }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return new User(this.usersService.create(createUserDto));
+    return new User(await this.usersService.create(createUserDto));
   }
 
   @Put(':id')
@@ -47,10 +47,13 @@ export class UsersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    const user = this.usersService.findOne(id);
+    const user = await this.usersService.findOne(id);
     if (!user) throw new NotFoundException();
 
-    const result = this.usersService.updatePassword(user, updatePasswordDto);
+    const result = await this.usersService.updatePassword(
+      user,
+      updatePasswordDto,
+    );
     if (!result)
       throw new HttpException('Wrong old password', HttpStatus.FORBIDDEN);
 
@@ -60,7 +63,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(204)
   async delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const user = this.usersService.delete(id);
+    const user = await this.usersService.delete(id);
     if (!user) throw new NotFoundException();
   }
 }

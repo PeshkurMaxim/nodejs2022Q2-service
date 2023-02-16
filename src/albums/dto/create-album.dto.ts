@@ -1,4 +1,6 @@
 import { Allow, IsNumber, IsString } from 'class-validator';
+import { Artist } from 'src/artists/entities/artist.entity';
+import { DeepPartial } from 'typeorm';
 
 export default class CreateAlbumDto {
   @IsString()
@@ -8,5 +10,5 @@ export default class CreateAlbumDto {
   year: number;
 
   @Allow()
-  artistId?: string | null;
+  artistId: string;
 }

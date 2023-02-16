@@ -1,7 +1,7 @@
 FROM node:18.14-alpine
 WORKDIR /usr/app
 COPY package*.json .
-RUN npm install --poduction
+RUN npm install
 COPY . .
 EXPOSE 4000
-CMD ["npm", "start"]
+CMD ["npm", "start:dev"]

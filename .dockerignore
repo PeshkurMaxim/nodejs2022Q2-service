@@ -1,4 +1,5 @@
 .git
 .vscode
-nodemodules
+node_modules
 database
+dist

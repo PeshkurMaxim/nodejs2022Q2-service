@@ -29,19 +29,19 @@ export class ArtistsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    const artist = this.artistsService.findOne(id);
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const artist = await this.artistsService.findOne(id);
     if (!artist) throw new NotFoundException();
 
     return artist;
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateArtistDto: UpdateArtistDto,
   ) {
-    const artist = this.artistsService.update(id, updateArtistDto);
+    const artist = await this.artistsService.update(id, updateArtistDto);
     if (!artist) throw new NotFoundException();
 
     return artist;
@@ -49,8 +49,8 @@ export class ArtistsController {
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    const artist = this.artistsService.remove(id);
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    const artist = await this.artistsService.remove(id);
     if (!artist) throw new NotFoundException();
   }
 }
