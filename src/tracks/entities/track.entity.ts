@@ -7,7 +7,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
 } from 'typeorm';
 
 @Entity()
@@ -25,7 +24,7 @@ export class Track {
   @JoinColumn({ name: 'artistId' })
   artist: Artist;
 
-  @RelationId((track: Track) => track.artist)
+  @Column({ nullable: true })
   artistId: string;
 
   @ManyToOne(() => Album, (album) => album.tracks, {
@@ -36,7 +35,7 @@ export class Track {
   @Transform(({ value }) => value.id)
   album: Album;
 
-  @RelationId((track: Track) => track.album)
+  @Column({ nullable: true })
   albumId: string;
 
   @Column({ type: 'integer' })
