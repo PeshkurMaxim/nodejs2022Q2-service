@@ -12,7 +12,7 @@ export class TracksService {
     private tracksRepository: Repository<Track>,
   ) {}
   create(createTrackDto: CreateTrackDto): Promise<Track> {
-    console.log(createTrackDto);
+    // console.log(createTrackDto);
     return this.tracksRepository.save(createTrackDto);
   }
 
