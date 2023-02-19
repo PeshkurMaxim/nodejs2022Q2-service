@@ -2,8 +2,11 @@ version: '3.0'
 
 services:
   node:
-    build: .
-    image: m.peshkur/service
+    container_name: node
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    image: node
     networks:
       - service  
     ports:
@@ -15,23 +18,31 @@ services:
       - PORT=${PORT}
     volumes:
       - ./src:/usr/app/src
-    command: ["npm", "run", "start:dev"]
+    command: npm run start:dev
 
   database:
+    container_name: database
     build: ./database/
-    image: m.peshkur/service-database
+    image: database
     networks:
       - service 
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT} 
-    restart: on-failure 
+      - ${DB_PORT}:${DB_PORT} 
+    restart: always
     volumes:
-      - ./database/data:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    container_name: postgres-db
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    command: [
+      "postgres",
+      "-c", "log_destination=csvlog",
+      "-c", "logging_collector=on",
+      "-c", "log_directory=pg_log"
+    ]
 networks:
   service:
     driver: bridge
+volumes:
+  postgres:
