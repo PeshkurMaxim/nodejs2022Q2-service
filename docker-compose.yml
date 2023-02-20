@@ -16,6 +16,7 @@ services:
       - database
     environment:
       - PORT=${PORT}
+      - DB_HOST=database
     volumes:
       - ./src:/usr/app/src
     command: npm run start:dev

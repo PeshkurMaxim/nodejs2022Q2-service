@@ -21,7 +21,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "typeorm": "npm run build && typeorm-ts-node-commonjs -d ./dist/db/data-source.js",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:generate": "npm run typeorm -- migration:generate"
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "docker:scan":"docker scan mpeshkur/rs-node"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
