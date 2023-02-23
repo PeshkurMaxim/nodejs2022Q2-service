@@ -6,10 +6,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CustomLoggerService } from '../logger/logger.service';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  constructor(private readonly logger: CustomLoggerService) {}
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -17,11 +19,25 @@ export class AllExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
+    let statusMessage = exception.message;
+
+    if (status >= 500) {
+      this.logger.error(
+        `Url: ${request.originalUrl}  -  ${status} : ${statusMessage}`,
+      );
+
+      statusMessage = 'Internal server error';
+    }
+
+    if (status >= 400 && status < 500) {
+      this.logger.warn(
+        `Url: ${request.originalUrl}  -  ${status} : ${statusMessage}`,
+      );
+    }
 
     response.status(status).json({
       statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      message: statusMessage,
     });
   }
 }
