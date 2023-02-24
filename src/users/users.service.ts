@@ -45,4 +45,12 @@ export class UsersService {
     await this.usersRepository.delete({ id: id });
     return user;
   }
+
+  async update(id: string, data: Partial<CreateUserDto>) {
+    return this.usersRepository.update({ id }, data);
+  }
+
+  async findByLogin(login: string) {
+    return this.usersRepository.findOneBy({ login });
+  }
 }

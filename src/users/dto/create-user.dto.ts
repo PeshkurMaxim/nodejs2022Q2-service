@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { Allow, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -6,4 +6,7 @@ export class CreateUserDto {
 
   @IsString()
   readonly password: string;
+
+  @Allow()
+  refreshToken: string;
 }
