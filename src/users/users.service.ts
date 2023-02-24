@@ -4,6 +4,7 @@ import { UpdatePasswordDto } from './dto/update-password-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +14,11 @@ export class UsersService {
   ) {}
 
   async create(createUserDTO: CreateUserDto): Promise<User> {
-    return await this.usersRepository.save(createUserDTO);
+    const passwordHash = await this.hashData(createUserDTO.password);
+    return await this.usersRepository.save({
+      ...createUserDTO,
+      password: passwordHash,
+    });
   }
 
   findAll(): Promise<User[]> {
@@ -28,11 +33,17 @@ export class UsersService {
     user: User,
     passwords: UpdatePasswordDto,
   ): Promise<User> {
-    if (user.password !== passwords.oldPassword) return null;
+    const passwordMatches = await bcrypt.compare(
+      passwords.oldPassword,
+      user.password,
+    );
 
+    if (!passwordMatches) return null;
+
+    const passwordHash = await this.hashData(passwords.newPassword);
     const updatedUser = {
       ...user,
-      password: passwords.newPassword,
+      password: passwordHash,
     };
 
     return await this.usersRepository.save(updatedUser);
@@ -50,7 +61,16 @@ export class UsersService {
     return this.usersRepository.update({ id }, data);
   }
 
-  async findByLogin(login: string) {
-    return this.usersRepository.findOneBy({ login });
+  async findByLoginAndPasword(login: string, password: string) {
+    const users = await this.usersRepository.findBy({ login });
+    for (const user of users) {
+      const passwordMatches = await bcrypt.compare(password, user.password);
+      if (passwordMatches) return user;
+    }
+    return null;
+  }
+
+  hashData(data: string) {
+    return bcrypt.hash(data, 12);
   }
 }

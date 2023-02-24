@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
@@ -18,44 +14,46 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<any> {
-    // Hash password
-    const hash = await this.hashData(createUserDto.password);
-    const newUser = await this.usersService.create({
-      ...createUserDto,
-      password: hash,
-    });
+    const newUser = await this.usersService.create(createUserDto);
+
     const tokens = await this.getTokens(newUser.id, newUser.login);
     await this.updateRefreshToken(newUser.id, tokens.refreshToken);
-    return tokens;
+
+    return { ...tokens, id: newUser.id };
   }
 
   async signIn(data: AuthDto) {
-    // Check if user exists
-    const user = await this.usersService.findByLogin(data.login);
-    if (!user) throw new BadRequestException(`Invalid login or password`);
+    const user = await this.usersService.findByLoginAndPasword(
+      data.login,
+      data.password,
+    );
+
+    if (!user) throw new ForbiddenException(`Invalid login or password`);
+
     const passwordMatches = await bcrypt.compare(data.password, user.password);
     if (!passwordMatches)
-      throw new BadRequestException('Invalid login or password');
+      throw new ForbiddenException('Invalid login or password');
+
     const tokens = await this.getTokens(user.id, user.login);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
-  }
 
-  async logout(userId: string) {
-    return this.usersService.update(userId, { refreshToken: null });
+    return tokens;
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
     const user = await this.usersService.findOne(userId);
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access Denied');
+
     const refreshTokenMatches = await bcrypt.compare(
       refreshToken,
       user.refreshToken,
     );
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+
     const tokens = await this.getTokens(user.id, user.login);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
+
     return tokens;
   }
 

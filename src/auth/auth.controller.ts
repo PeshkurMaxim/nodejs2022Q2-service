@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
-import { AccessTokenGuard } from 'src/common/guards/accessToken.guard';
+import { RefreshTokenGuard } from 'src/common/guards/refreshToken.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
@@ -14,14 +21,19 @@ export class AuthController {
     return this.authService.signUp(createUserDto);
   }
 
-  @Post('signin')
+  @Post('login')
   signin(@Body() data: AuthDto) {
     return this.authService.signIn(data);
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Get('logout')
-  logout(@Req() req: Request) {
-    this.authService.logout(req.user['sub']);
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh')
+  refreshTokens(@Req() req: Request, @Body() data: { refreshToken: string }) {
+    if (typeof data.refreshToken != 'string')
+      throw new UnauthorizedException('Unauthorized');
+
+    const userId = req.user['sub'];
+
+    return this.authService.refreshTokens(userId, data.refreshToken);
   }
 }
