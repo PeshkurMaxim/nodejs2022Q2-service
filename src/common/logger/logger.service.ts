@@ -1,7 +1,6 @@
 import { ConsoleLogger, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createWriteStream, WriteStream } from 'fs';
-import { join } from 'path';
+import { appendFile, existsSync, mkdirSync, renameSync, statSync } from 'fs';
 
 enum LogLevel {
   error,
@@ -14,26 +13,25 @@ enum LogLevel {
 @Injectable()
 export class CustomLoggerService extends ConsoleLogger {
   private loggerLevel: number;
-  private logFile: WriteStream;
-  private logErrorFile: WriteStream;
+  private logFile: string;
+  private logErrorFile: string;
+  private readonly LOGGER_FILE_SIZE: number;
 
   constructor(private readonly configService: ConfigService) {
     super();
 
     const SERVER_ROOT_DIR = this.configService.get<string>('SERVER_ROOT_DIR');
+    const folder = SERVER_ROOT_DIR + '/logs';
+    if (!existsSync(folder)) {
+      mkdirSync(folder);
+    }
+
+    this.LOGGER_FILE_SIZE = +this.configService.get<string>('LOGGER_FILE_SIZE');
     this.loggerLevel =
       process.env.LOGGER_LEVEL in LogLevel ? +process.env.LOGGER_LEVEL : 3;
 
-    this.logFile = createWriteStream(join(SERVER_ROOT_DIR, '/logs/app.log'), {
-      flags: 'a+',
-    });
-
-    this.logErrorFile = createWriteStream(
-      join(SERVER_ROOT_DIR + '/logs/error.log'),
-      {
-        flags: 'a+',
-      },
-    );
+    this.logFile = SERVER_ROOT_DIR + '/logs/app.log';
+    this.logErrorFile = SERVER_ROOT_DIR + '/logs/error.log';
   }
 
   error(message: string, ...optionalParams: any[]) {
@@ -84,9 +82,22 @@ export class CustomLoggerService extends ConsoleLogger {
     if (level == 0) this.writeToFile(this.logErrorFile, formatedMessage);
   }
 
-  private writeToFile(stream: WriteStream, msg: string) {
-    stream.write(msg);
+  private writeToFile(fileName: string, message: string) {
+    try {
+      const stats = statSync(fileName);
+      if (stats.size / 1024 > this.LOGGER_FILE_SIZE) {
+        renameSync(fileName, this.renameFile(fileName));
+      }
+    } catch (err) {}
+
+    appendFile(fileName, message, { flag: 'a+' }, (err) => {
+      if (err) super.error(err.message);
+    });
   }
 
-  // private rotate() {}
+  private renameFile(fileName: string) {
+    const fileNamePart = fileName.split('.log');
+    fileNamePart.push(Date.now().toString(), '.log');
+    return fileNamePart.join('');
+  }
 }
