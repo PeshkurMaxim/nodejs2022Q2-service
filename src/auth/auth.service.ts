@@ -23,10 +23,7 @@ export class AuthService {
   }
 
   async signIn(data: AuthDto) {
-    const user = await this.usersService.findByLoginAndPasword(
-      data.login,
-      data.password,
-    );
+    const user = await this.usersService.findByLogin(data.login);
 
     if (!user) throw new ForbiddenException(`Invalid login or password`);
 

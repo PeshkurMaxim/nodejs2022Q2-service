@@ -61,13 +61,8 @@ export class UsersService {
     return this.usersRepository.update({ id }, data);
   }
 
-  async findByLoginAndPasword(login: string, password: string) {
-    const users = await this.usersRepository.findBy({ login });
-    for (const user of users) {
-      const passwordMatches = await bcrypt.compare(password, user.password);
-      if (passwordMatches) return user;
-    }
-    return null;
+  findByLogin(login: string) {
+    return this.usersRepository.findOneBy({ login });
   }
 
   hashData(data: string) {
