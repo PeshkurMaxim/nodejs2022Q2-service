@@ -32,6 +32,7 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
+  @Exclude()
   refreshToken: string;
 
   constructor(partial: Partial<User>) {

@@ -5,12 +5,14 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private configService: ConfigService,
   ) {}
 
   async create(createUserDTO: CreateUserDto): Promise<User> {
@@ -66,6 +68,6 @@ export class UsersService {
   }
 
   hashData(data: string) {
-    return bcrypt.hash(data, 12);
+    return bcrypt.hash(data, +this.configService.get<string>('CRYPT_SALT'));
   }
 }

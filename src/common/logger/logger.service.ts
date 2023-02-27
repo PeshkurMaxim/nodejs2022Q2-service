@@ -35,7 +35,7 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   error(message: string, ...optionalParams: any[]) {
-    if (LogLevel.error > this.loggerLevel) return;
+    if (!this.isLevelEnable(LogLevel.error)) return;
 
     this.writeLog(LogLevel.error, message);
     if (optionalParams.length == 0) super.error(message);
@@ -43,7 +43,7 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   warn(message: string, ...optionalParams: any[]) {
-    if (LogLevel.warn > this.loggerLevel) return;
+    if (!this.isLevelEnable(LogLevel.warn)) return;
 
     this.writeLog(LogLevel.warn, message);
     if (optionalParams.length == 0) super.warn(message);
@@ -51,7 +51,7 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   log(message: string, ...optionalParams: any[]) {
-    if (LogLevel.log > this.loggerLevel) return;
+    if (!this.isLevelEnable(LogLevel.log)) return;
 
     this.writeLog(LogLevel.log, message);
     if (optionalParams.length == 0) super.log(message);
@@ -59,7 +59,7 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   verbose(message: string, ...optionalParams: any[]) {
-    if (LogLevel.verbose > this.loggerLevel) return;
+    if (!this.isLevelEnable(LogLevel.verbose)) return;
 
     this.writeLog(LogLevel.verbose, message);
     if (optionalParams.length == 0) super.verbose(message);
@@ -67,11 +67,15 @@ export class CustomLoggerService extends ConsoleLogger {
   }
 
   debug(message: string, ...optionalParams: any[]) {
-    if (LogLevel.debug > this.loggerLevel) return;
+    if (!this.isLevelEnable(LogLevel.debug)) return;
 
     this.writeLog(LogLevel.debug, message);
     if (optionalParams.length == 0) super.debug(message);
     else super.debug(message, optionalParams);
+  }
+
+  private isLevelEnable(logLevel: number): boolean {
+    return logLevel <= this.loggerLevel;
   }
 
   private writeLog(level: number, message: string) {

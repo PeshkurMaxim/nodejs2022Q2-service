@@ -55,7 +55,7 @@ export class AuthService {
   }
 
   hashData(data: string) {
-    return bcrypt.hash(data, 12);
+    return bcrypt.hash(data, +this.configService.get<string>('CRYPT_SALT'));
   }
 
   async updateRefreshToken(userId: string, refreshToken: string) {
