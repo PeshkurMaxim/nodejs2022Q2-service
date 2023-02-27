@@ -14,7 +14,7 @@ git clone {repository URL}
 ## Switch branch
 
 ```
-git checkout dev-docker-orm
+git checkout dev-logger-error-handling
 ```
 
 ## Installing NPM modules
