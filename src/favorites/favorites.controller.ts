@@ -16,49 +16,52 @@ export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
   @Post('track/:id')
-  addTrack(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.addTrack(id))
+  async addTrack(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.addTrack(id)))
       throw new UnprocessableEntityException();
 
     return 'Track succesful added';
   }
 
   @Post('album/:id')
-  addAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.addAlbum(id))
+  async addAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.addAlbum(id)))
       throw new UnprocessableEntityException();
 
     return 'Album succesful added';
   }
 
   @Post('artist/:id')
-  addArtist(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.addArtist(id))
+  async addArtist(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.addArtist(id)))
       throw new UnprocessableEntityException();
 
     return 'Artist succesful added';
   }
 
   @Get()
-  findAll() {
-    return this.favoritesService.findAll();
+  async findAll() {
+    return await this.favoritesService.findAll();
   }
 
   @Delete('track/:id')
   @HttpCode(204)
-  removeTrack(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.removeTrack(id)) throw new NotFoundException();
+  async removeTrack(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.removeTrack(id)))
+      throw new NotFoundException();
   }
 
   @Delete('album/:id')
   @HttpCode(204)
-  removeAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.removeAlbum(id)) throw new NotFoundException();
+  async removeAlbum(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.removeAlbum(id)))
+      throw new NotFoundException();
   }
 
   @Delete('artist/:id')
   @HttpCode(204)
-  removeArtist(@Param('id', new ParseUUIDPipe()) id: string) {
-    if (!this.favoritesService.removeArtist(id)) throw new NotFoundException();
+  async removeArtist(@Param('id', new ParseUUIDPipe()) id: string) {
+    if (!(await this.favoritesService.removeArtist(id)))
+      throw new NotFoundException();
   }
 }

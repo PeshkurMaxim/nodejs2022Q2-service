@@ -2,38 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { DB } from 'src/DB/db.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TracksService {
-  constructor(private database: DB) {}
-
-  create(createTrackDto: CreateTrackDto): Track {
-    const newTrack: Track = {
-      id: uuidv4(),
-      artistId: null,
-      albumId: null,
-      ...createTrackDto,
-    };
-
-    this.database.tracks.push(newTrack);
-    return newTrack;
+  constructor(
+    @InjectRepository(Track)
+    private tracksRepository: Repository<Track>,
+  ) {}
+  create(createTrackDto: CreateTrackDto): Promise<Track> {
+    // console.log(createTrackDto);
+    return this.tracksRepository.save(createTrackDto);
   }
 
-  findAll(): Track[] {
-    return this.database.tracks;
+  findAll(): Promise<Track[]> {
+    return this.tracksRepository.find();
   }
 
-  findOne(id: string): Track | null {
-    const track = this.database.tracks.find((track) => track.id == id);
-    if (!track) return null;
-
-    return track;
+  findOne(id: string): Promise<Track> {
+    return this.tracksRepository.findOneBy({ id: id });
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto): Track | null {
-    const track = this.findOne(id);
+  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<Track> {
+    const track = await this.findOne(id);
     if (!track) return null;
 
     const updatedTrack = {
@@ -41,16 +33,14 @@ export class TracksService {
       ...updateTrackDto,
     };
 
-    this.database.tracks[this.database.tracks.indexOf(track)] = updatedTrack;
-
-    return updatedTrack;
+    return this.tracksRepository.save(updatedTrack);
   }
 
-  remove(id: string): Track | null {
-    const track = this.findOne(id);
+  async remove(id: string): Promise<Track> {
+    const track = await this.findOne(id);
     if (!track) return null;
 
-    this.database.tracks.splice(this.database.tracks.indexOf(track), 1);
+    await this.tracksRepository.delete({ id: id });
     return track;
   }
 }

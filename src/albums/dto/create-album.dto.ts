@@ -8,5 +8,5 @@ export default class CreateAlbumDto {
   year: number;
 
   @Allow()
-  artistId?: string | null;
+  artistId: string;
 }

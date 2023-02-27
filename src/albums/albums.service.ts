@@ -2,37 +2,29 @@ import { Injectable } from '@nestjs/common';
 import CreateAlbumDto from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { DB } from 'src/DB/db.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private database: DB) {}
-
-  create(createAlbumDto: CreateAlbumDto): Album {
-    const newAlbum: Album = {
-      id: uuidv4(),
-      artistId: null,
-      ...createAlbumDto,
-    };
-
-    this.database.albums.push(newAlbum);
-    return newAlbum;
+  constructor(
+    @InjectRepository(Album)
+    private albumsRepository: Repository<Album>,
+  ) {}
+  create(createAlbumDto: CreateAlbumDto): Promise<Album> {
+    return this.albumsRepository.save(createAlbumDto);
   }
 
-  findAll(): Album[] {
-    return this.database.albums;
+  findAll(): Promise<Album[]> {
+    return this.albumsRepository.find();
   }
 
-  findOne(id: string): Album | null {
-    const album = this.database.albums.find((album) => album.id == id);
-    if (!album) return null;
-
-    return album;
+  findOne(id: string): Promise<Album> {
+    return this.albumsRepository.findOneBy({ id: id });
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto): Album | null {
-    const album = this.findOne(id);
+  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<Album> {
+    const album = await this.findOne(id);
     if (!album) return null;
 
     const updatedAlbum = {
@@ -40,27 +32,14 @@ export class AlbumsService {
       ...updateAlbumDto,
     };
 
-    this.database.albums[this.database.albums.indexOf(album)] = updatedAlbum;
-
-    return updatedAlbum;
+    return this.albumsRepository.save(updatedAlbum);
   }
 
-  remove(id: string): Album | null {
-    const album = this.findOne(id);
+  async remove(id: string): Promise<Album> {
+    const album = await this.findOne(id);
     if (!album) return null;
 
-    this.database.tracks = this.database.tracks.map((track) => {
-      if (track.albumId === id) {
-        return {
-          ...track,
-          albumId: null,
-        };
-      } else {
-        return track;
-      }
-    });
-
-    this.database.albums.splice(this.database.albums.indexOf(album), 1);
+    await this.albumsRepository.delete({ id: id });
     return album;
   }
 }

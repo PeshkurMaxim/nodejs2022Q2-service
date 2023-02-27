@@ -29,28 +29,29 @@ export class AlbumsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    const album = this.albumsService.findOne(id);
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    const album = await this.albumsService.findOne(id);
     if (!album) throw new NotFoundException();
 
     return album;
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
-    const album = this.albumsService.update(id, updateAlbumDto);
+    const album = await this.albumsService.update(id, updateAlbumDto);
     if (!album) throw new NotFoundException();
+    // console.log(album);
 
     return album;
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', new ParseUUIDPipe()) id: string) {
-    const album = this.albumsService.remove(id);
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    const album = await this.albumsService.remove(id);
     if (!album) throw new NotFoundException();
   }
 }

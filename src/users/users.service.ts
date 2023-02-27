@@ -1,57 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { DB } from 'src/DB/db.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password-user.dto';
 import { User } from './entities/user.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  constructor(private database: DB) {}
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  create(user: CreateUserDto): User {
-    const newUser: User = {
-      id: uuidv4(),
-      ...user,
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-
-    this.database.users.push(newUser);
-    return newUser;
+  async create(createUserDTO: CreateUserDto): Promise<User> {
+    return await this.usersRepository.save(createUserDTO);
   }
 
-  findAll(): User[] {
-    return this.database.users;
+  findAll(): Promise<User[]> {
+    return this.usersRepository.find();
   }
 
-  findOne(id: string): User | null {
-    const user = this.database.users.find((user) => user.id == id);
-
-    return user;
+  findOne(id: string): Promise<User> {
+    return this.usersRepository.findOneBy({ id: id });
   }
 
-  updatePassword(user: User, passwords: UpdatePasswordDto): User | null {
+  async updatePassword(
+    user: User,
+    passwords: UpdatePasswordDto,
+  ): Promise<User> {
     if (user.password !== passwords.oldPassword) return null;
 
     const updatedUser = {
       ...user,
       password: passwords.newPassword,
-      version: ++user.version,
-      updatedAt: Date.now(),
     };
 
-    this.database.users[this.database.users.indexOf(user)] = updatedUser;
-
-    return updatedUser;
+    return await this.usersRepository.save(updatedUser);
   }
 
-  delete(id: string): User | null {
-    const user = this.database.users.find((user) => user.id == id);
+  async delete(id: string): Promise<User> {
+    const user = await this.findOne(id);
     if (!user) return null;
 
-    this.database.users.splice(this.database.users.indexOf(user), 1);
+    await this.usersRepository.delete({ id: id });
     return user;
   }
 }

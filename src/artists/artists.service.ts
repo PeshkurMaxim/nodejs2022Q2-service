@@ -2,36 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { DB } from 'src/DB/db.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private database: DB) {}
+  constructor(
+    @InjectRepository(Artist)
+    private artistsRepository: Repository<Artist>,
+  ) {}
 
-  create(createArtistDto: CreateArtistDto): Artist {
-    const newArtist: Artist = {
-      id: uuidv4(),
-      ...createArtistDto,
-    };
-
-    this.database.artists.push(newArtist);
-    return newArtist;
+  async create(createArtistDto: CreateArtistDto): Promise<Artist> {
+    return await this.artistsRepository.save(createArtistDto);
   }
 
-  findAll(): Artist[] {
-    return this.database.artists;
+  async findAll(): Promise<Artist[]> {
+    return await this.artistsRepository.find();
   }
 
-  findOne(id: string): Artist | null {
-    const artist = this.database.artists.find((artist) => artist.id == id);
-    if (!artist) return null;
-
-    return artist;
+  async findOne(id: string): Promise<Artist> {
+    return await this.artistsRepository.findOneBy({ id: id });
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    const artist = this.findOne(id);
+  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
+    const artist = await this.findOne(id);
     if (!artist) return null;
 
     const updatedArtist = {
@@ -39,28 +33,14 @@ export class ArtistsService {
       ...updateArtistDto,
     };
 
-    this.database.artists[this.database.artists.indexOf(artist)] =
-      updatedArtist;
-
-    return updatedArtist;
+    return await this.artistsRepository.save(updatedArtist);
   }
 
-  remove(id: string) {
-    const artist = this.findOne(id);
+  async remove(id: string) {
+    const artist = await this.findOne(id);
     if (!artist) return null;
 
-    this.database.tracks = this.database.tracks.map((track) => {
-      if (track.artistId === id) {
-        return {
-          ...track,
-          artistId: null,
-        };
-      } else {
-        return track;
-      }
-    });
-
-    this.database.artists.splice(this.database.artists.indexOf(artist), 1);
+    await this.artistsRepository.delete({ id: id });
     return artist;
   }
 }
